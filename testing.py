@@ -20,26 +20,29 @@ def telegram_bot(msg):
 	requests.get("https://api.telegram.org/bot{}/sendMessage?chat_id=1003584231&text={}".format(telegram_key, msg))
 
 def check_slots():
-	for result in results['sessions']:
-		msg = {}
-		if result["min_age_limit"] == 18 and result["fee_type"] == 'Free':
-			if result["available_capacity"] != 0:
-				msg['Name'] = result['name']
-				msg['Address'] = result['address']
-				msg['Pincode'] = result['pincode']
-				msg['Total_doses'] = result['available_capacity']
-				msg['Dose_1'] = result['available_capacity_dose1']
-				msg['Dose_2'] = result['available_capacity_dose2']
-				msg['Vaccine'] = result['vaccine']
-				msg = json.dumps(msg)
-				msg = msg.replace("{", "")
-				msg = msg.replace("}", "")
-				msg = msg.replace('"', "")
-				msg = msg.replace(", ", "\n")
-				telegram_bot(msg) #msg will be a formatted string now
-
-	telegram_bot(end_log)
+	noti_flag = 0
+	if results["sessions"]:
+		for result in results['sessions']:
+			msg = {}
+			if result["min_age_limit"] == 18 and result["fee_type"] == 'Free':
+				if result["available_capacity"] != 0:
+					msg['Name'] = result['name']
+					msg['Address'] = result['address']
+					msg['Pincode'] = result['pincode']
+					msg['Total_doses'] = result['available_capacity']
+					msg['Dose_1'] = result['available_capacity_dose1']
+					msg['Dose_2'] = result['available_capacity_dose2']
+					msg['Vaccine'] = result['vaccine']
+					msg = json.dumps(msg)
+					msg = msg.replace("{", "")
+					msg = msg.replace("}", "")
+					msg = msg.replace('"', "")
+					msg = msg.replace(", ", "\n")
+					telegram_bot(msg) #msg will be a formatted string now
+					noti_flag = 1
+	return noti_flag
 
 while True:
-	check_slots()
+	if check_slots():
+		telegram_bot(end_log)
 	time.sleep(15)
