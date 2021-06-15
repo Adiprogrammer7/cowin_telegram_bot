@@ -1,5 +1,4 @@
 # TODO: make it more dynamic and versatile for other users like chatid, ability to select their location.
-# TODO: dynamically get chat id
 # https://api.telegram.org/bot<bot_token>/getUpdates
 # https://api.telegram.org/bot<bot_token>/sendMessage?chat_id=1003584231&text=hello
 
@@ -10,13 +9,16 @@ from time import sleep
 import json
 import os
 
-current_date = datetime.today().strftime('%d-%m-%Y')
-next_day1 = (datetime.today() + timedelta(days=1)).strftime('%d-%m-%Y')
-next_day2 = (datetime.today() + timedelta(days=2)).strftime('%d-%m-%Y')
-days_li = [current_date, next_day1, next_day2]
 district_id = 374  #374, 363, 395, state_id = 21
 notification = "gamey_notification.wav"
 telegram_key = os.environ['COWIN_TELEGRAM_BOT']
+
+def days_to_fetch(days):
+	days_li = []
+	for i in range(days):
+		day = (datetime.today() + timedelta(days=i)).strftime('%d-%m-%Y')
+		days_li.append(day)
+	return days_li
 
 def telegram_bot(msg):
 	requests.get("https://api.telegram.org/bot{}/sendMessage?chat_id=1003584231&text={}".format(telegram_key, msg))
@@ -46,6 +48,7 @@ def check_slots(results):
 	return cnt
 
 while True:
+	days_li = days_to_fetch(3) #will check for these many days
 	for day in days_li:
 		results = requests.get('https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id={}&date={}'.format(district_id, day))
 		results = results.json()
