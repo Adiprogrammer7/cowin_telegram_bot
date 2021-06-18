@@ -1,6 +1,6 @@
-# TODO: make it more dynamic and versatile for other users like chatid, ability to select their location.
 # https://api.telegram.org/bot<bot_token>/getUpdates
 # https://api.telegram.org/bot<bot_token>/sendMessage?chat_id=1003584231&text=hello
+# https://stackoverflow.com/a/38388851/8533259
 
 import requests
 from datetime import datetime, timedelta
@@ -8,10 +8,13 @@ from playsound import playsound
 from time import sleep
 import json
 import os
-
-district_id = 374  #374, 363, 395, state_id = 21
-notification = "gamey_notification.wav"
+ 
 telegram_key = os.environ['COWIN_TELEGRAM_BOT']
+notification = "gamey_notification.wav"
+
+#374, 363, 395, state_id = 21
+with open("location.txt", "r") as file:
+	district_id = file.read()
 
 def days_to_fetch(days):
 	days_li = []
@@ -28,7 +31,7 @@ def check_slots(results):
 	for result in results["sessions"]:
 		msg = {}
 		if result["min_age_limit"] == 18 and result["fee_type"] == 'Free':
-			if result["available_capacity_dose1"] != 0:
+			if result["available_capacity_dose1"] == 0:
 				msg['Name'] = result['name']
 				msg['Address'] = result['address']
 				msg['Pincode'] = result['pincode']
@@ -47,15 +50,16 @@ def check_slots(results):
 				cnt += 1
 	return cnt
 
-while True:
-	days_li = days_to_fetch(3) #will check for these many days
-	for day in days_li:
-		results = requests.get('https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id={}&date={}'.format(district_id, day))
-		results = results.json()
-		cnt = check_slots(results)
-		if cnt:
-			playsound(notification)
-			end_log = "- {} results at {} https://www.cowin.gov.in/home".format(cnt, day)
-			print(end_log)
-			telegram_bot(end_log)
-	sleep(12)
+if __name__ == '__main__':
+	while True:
+		days_li = days_to_fetch(3) #will check for these many days
+		for day in days_li:
+			results = requests.get('https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id={}&date={}'.format(district_id, day))
+			results = results.json()
+			cnt = check_slots(results)
+			if cnt:
+				playsound(notification)
+				end_log = "- {} results at {} https://www.cowin.gov.in/home".format(cnt, day)
+				print(end_log)
+				telegram_bot(end_log)
+		sleep(12)
