@@ -1,5 +1,4 @@
 # https://api.telegram.org/bot<bot_token>/getUpdates
-# https://api.telegram.org/bot<bot_token>/sendMessage?chat_id=1003584231&text=hello
 # https://stackoverflow.com/a/38388851/8533259
 
 import requests
@@ -9,13 +8,15 @@ from time import sleep
 import json
 import os
  
-telegram_key = os.environ['COWIN_TELEGRAM_BOT']
+telegram_key = os.environ['COWIN_TELEGRAM_BOT']  #your telegram bot token goes here
+telegram_chat_id = os.environ['COWIN_TELEGRAM_CHAT_ID']  #chat id for telegram bot
 notification = "gamey_notification.wav"
 
-#374, 363, 395, state_id = 21
+# reading district_id
 with open("location.txt", "r") as file:
 	district_id = file.read()
 
+# list of dates of n days from current date
 def days_to_fetch(days):
 	days_li = []
 	for i in range(days):
@@ -23,15 +24,16 @@ def days_to_fetch(days):
 		days_li.append(day)
 	return days_li
 
+# msg to telegram
 def telegram_bot(msg):
-	requests.get("https://api.telegram.org/bot{}/sendMessage?chat_id=1003584231&text={}".format(telegram_key, msg))
+	requests.get("https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}".format(telegram_key, telegram_chat_id, msg))
 
 def check_slots(results):
 	cnt = 0
 	for result in results["sessions"]:
 		msg = {}
 		if result["min_age_limit"] == 18 and result["fee_type"] == 'Free':
-			if result["available_capacity_dose1"] == 0:
+			if result["available_capacity_dose1"] != 0:
 				msg['Name'] = result['name']
 				msg['Address'] = result['address']
 				msg['Pincode'] = result['pincode']

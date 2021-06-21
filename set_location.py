@@ -1,3 +1,5 @@
+# to fetch the district id from cowin api and store it in location.txt 
+
 import requests
 
 headers = {
